@@ -52,16 +52,16 @@ resource "aws_security_group" "nginx_sg" {
 
 # EC2 Instance to run the app
 resource "aws_instance" "nginx" {
-  ami           = "ami-08eb150f611ca277f" # Ubuntu 20.04 LTS AMI for eu-north-1
-  instance_type = var.instance_type      # Instance type defined in variables.tf
-  key_name      = "devops_project"      # Existing key pair in AWS
-  subnet_id     = aws_subnet.private.id
+  ami           = "ami-08eb150f611ca277f" # Ubuntu 20.04 LTS AMI
+  instance_type = var.instance_type
+  key_name      = "devops_project" # Existing key pair
+  subnet_id     = aws_subnet.private_az1.id # Use private subnet in AZ-1
   security_groups = [aws_security_group.nginx_sg.id]
 
-  # Optional: User data script to bootstrap the instance
   user_data = file("${path.module}/installer.sh")
 
   tags = {
     Name = "nginx-instance"
   }
 }
+

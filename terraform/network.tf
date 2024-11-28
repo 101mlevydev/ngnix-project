@@ -1,7 +1,4 @@
-# Networking infrastructure for the application
-# Includes VPC, subnets (public and private), Internet Gateway, and NAT Gateway
-
-# Virtual Private Cloud
+# Create a VPC
 resource "aws_vpc" "main" {
   cidr_block           = "10.0.0.0/16"
   enable_dns_support   = true
@@ -11,26 +8,50 @@ resource "aws_vpc" "main" {
   }
 }
 
-# Public subnet for ALB and NAT Gateway
-resource "aws_subnet" "public" {
+# Public Subnet in AZ-1
+resource "aws_subnet" "public_az1" {
   vpc_id                  = aws_vpc.main.id
-  cidr_block              = "10.0.1.0/24"
+  cidr_block              = "10.0.10.0/24"  # Updated CIDR
+  availability_zone       = "eu-north-1a"
   map_public_ip_on_launch = true
   tags = {
-    Name = "nginx-public-subnet"
+    Name = "nginx-public-subnet-az1"
   }
 }
 
-# Private subnet for EC2 instances
-resource "aws_subnet" "private" {
-  vpc_id     = aws_vpc.main.id
-  cidr_block = "10.0.2.0/24"
+# Public Subnet in AZ-2
+resource "aws_subnet" "public_az2" {
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.20.0/24"  # Updated CIDR
+  availability_zone       = "eu-north-1b"
+  map_public_ip_on_launch = true
   tags = {
-    Name = "nginx-private-subnet"
+    Name = "nginx-public-subnet-az2"
   }
 }
 
-# Internet Gateway for public subnet
+# Private Subnet in AZ-1
+resource "aws_subnet" "private_az1" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.30.0/24"  # Updated CIDR
+  availability_zone = "eu-north-1a"
+  tags = {
+    Name = "nginx-private-subnet-az1"
+  }
+}
+
+# Private Subnet in AZ-2
+resource "aws_subnet" "private_az2" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.40.0/24"  # Updated CIDR
+  availability_zone = "eu-north-1b"
+  tags = {
+    Name = "nginx-private-subnet-az2"
+  }
+}
+
+
+# Internet Gateway
 resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
   tags = {
@@ -38,7 +59,7 @@ resource "aws_internet_gateway" "main" {
   }
 }
 
-# Public route table for outbound internet traffic
+# Public Route Table
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -52,26 +73,31 @@ resource "aws_route_table" "public" {
   }
 }
 
-# Associate the public route table with the public subnet
-resource "aws_route_table_association" "public" {
-  subnet_id      = aws_subnet.public.id
+# Associate the public route table with the public subnets
+resource "aws_route_table_association" "public_az1" {
+  subnet_id      = aws_subnet.public_az1.id
   route_table_id = aws_route_table.public.id
 }
 
-# NAT Gateway for private subnet internet access
+resource "aws_route_table_association" "public_az2" {
+  subnet_id      = aws_subnet.public_az2.id
+  route_table_id = aws_route_table.public.id
+}
+
+# NAT Gateway for private subnet access to the internet
 resource "aws_eip" "nat" {
-  vpc = true
+  domain = "vpc" # Updated to fix the deprecation warning
 }
 
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.public.id
+  subnet_id     = aws_subnet.public_az1.id
   tags = {
     Name = "nat-gateway"
   }
 }
 
-# Private route table for private subnet with NAT Gateway
+# Private Route Table
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 
@@ -85,8 +111,12 @@ resource "aws_route_table" "private" {
   }
 }
 
-# Associate the private route table with the private subnet
-resource "aws_route_table_association" "private" {
-  subnet_id      = aws_subnet.private.id
+resource "aws_route_table_association" "private_az1" {
+  subnet_id      = aws_subnet.private_az1.id
+  route_table_id = aws_route_table.private.id
+}
+
+resource "aws_route_table_association" "private_az2" {
+  subnet_id      = aws_subnet.private_az2.id
   route_table_id = aws_route_table.private.id
 }
