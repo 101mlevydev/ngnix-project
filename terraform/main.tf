@@ -109,8 +109,8 @@ resource "aws_route_table_association" "public" {
 
 # EC2 Instance
 resource "aws_instance" "nginx" {
-  ami           = "ami-0c5b9fb2170da6a5e" # Ubuntu 20.04 LTS AMI for eu-north-1
-  instance_type = "t2.micro"
+  ami           = "ami-08eb150f611ca277f" # Ubuntu 20.04 LTS AMI for eu-north-1
+  instance_type = "t3.micro"
   key_name      = aws_key_pair.nginx_key.key_name # Associate key pair
   subnet_id     = aws_subnet.private.id
   security_groups = [aws_security_group.nginx_sg.id]
