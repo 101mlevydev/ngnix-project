@@ -1,13 +1,10 @@
-# Load Balancer setup for routing traffic to the EC2 instance
-# Includes ALB, target group, and listener configuration
-
 # Application Load Balancer
 resource "aws_lb" "nginx_alb" {
   name               = "nginx-app-alb"
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.nginx_sg.id]
-  subnets            = [aws_subnet.public.id]
+  subnets            = [aws_subnet.public_az1.id, aws_subnet.public_az2.id] # Use subnets in multiple AZs
 
   tags = {
     Name = "nginx-app-alb"
