@@ -213,6 +213,7 @@ resource "aws_instance" "nginx" {
     sudo systemctl restart sshd
   EOT
 
+
   tags = {
     Name = "nginx-instance"
   }
