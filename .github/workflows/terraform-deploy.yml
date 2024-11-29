@@ -35,12 +35,31 @@ jobs:
 
       # Initialize Terraform
       - name: Terraform Init
-        run: terraform -chdir=terraform init
+        working-directory: terraform
+        run: terraform init
+
+      # Import Existing Resources (Dynamic Check)
+      - name: Check and Import Resources
+        working-directory: terraform
+        run: |
+          # Check if Load Balancer is in the state
+          if ! terraform state list | grep -q "aws_lb.nginx_alb"; then
+            echo "Importing existing Load Balancer..."
+            terraform import aws_lb.nginx_alb <load_balancer_arn>
+          fi
+
+          # Check if Target Group is in the state
+          if ! terraform state list | grep -q "aws_lb_target_group.nginx_tg"; then
+            echo "Importing existing Target Group..."
+            terraform import aws_lb_target_group.nginx_tg <target_group_arn>
+          fi
 
       # Plan Terraform changes
       - name: Terraform Plan
-        run: terraform -chdir=terraform plan -out=tfplan
+        working-directory: terraform
+        run: terraform plan -out=tfplan
 
       # Apply Terraform changes
       - name: Terraform Apply
-        run: terraform -chdir=terraform apply -auto-approve tfplan
+        working-directory: terraform
+        run: terraform apply -auto-approve tfplan
