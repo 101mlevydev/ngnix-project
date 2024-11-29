@@ -41,11 +41,14 @@ jobs:
       # Check and Import Resources
       - name: Check and Import Resources
         working-directory: terraform
+        env:
+          LOAD_BALANCER_ARN: ${{ secrets.LOAD_BALANCER_ARN }}
+          TARGET_GROUP_ARN: ${{ secrets.TARGET_GROUP_ARN }}
         run: |
           # Check if Load Balancer is in the Terraform state
           if ! terraform state list | grep -q "aws_lb.nginx_alb"; then
             echo "Importing existing Load Balancer..."
-            terraform import aws_lb.nginx_alb ${{ secrets.LOAD_BALANCER_ARN }}
+            terraform import aws_lb.nginx_alb "$LOAD_BALANCER_ARN"
           else
             echo "Load Balancer already managed in Terraform state."
           fi
@@ -53,7 +56,7 @@ jobs:
           # Check if Target Group is in the Terraform state
           if ! terraform state list | grep -q "aws_lb_target_group.nginx_tg"; then
             echo "Importing existing Target Group..."
-            terraform import aws_lb_target_group.nginx_tg ${{ secrets.TARGET_GROUP_ARN }}
+            terraform import aws_lb_target_group.nginx_tg "$TARGET_GROUP_ARN"
           else
             echo "Target Group already managed in Terraform state."
           fi
