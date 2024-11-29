@@ -58,7 +58,6 @@ jobs:
             echo "Target Group already managed in Terraform state."
           fi
 
-
       # Plan Terraform changes
       - name: Terraform Plan
         working-directory: terraform
