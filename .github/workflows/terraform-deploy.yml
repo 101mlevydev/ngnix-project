@@ -15,13 +15,17 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
+      # Debug Step: List the directory structure to confirm files
+      - name: List Files
+        run: ls -R
+
       # Set up Terraform
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v2
         with:
           terraform_version: 1.5.0
 
-      # Authenticate AWS CLI
+      # Configure AWS Credentials
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -31,12 +35,12 @@ jobs:
 
       # Initialize Terraform
       - name: Terraform Init
-        run: terraform init
+        run: terraform -chdir=terraform init
 
       # Plan Terraform changes
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: terraform -chdir=terraform plan -out=tfplan
 
       # Apply Terraform changes
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: terraform -chdir=terraform apply -auto-approve tfplan
