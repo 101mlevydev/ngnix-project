@@ -38,21 +38,26 @@ jobs:
         working-directory: terraform
         run: terraform init
 
-      # Import Existing Resources (Dynamic Check)
+      # Check and Import Resources
       - name: Check and Import Resources
         working-directory: terraform
         run: |
-          # Check if Load Balancer is in the state
+          # Check if Load Balancer is in the Terraform state
           if ! terraform state list | grep -q "aws_lb.nginx_alb"; then
             echo "Importing existing Load Balancer..."
-            terraform import aws_lb.nginx_alb <load_balancer_arn>
+            terraform import aws_lb.nginx_alb ${{ secrets.LOAD_BALANCER_ARN }}
+          else
+            echo "Load Balancer already managed in Terraform state."
           fi
 
-          # Check if Target Group is in the state
+          # Check if Target Group is in the Terraform state
           if ! terraform state list | grep -q "aws_lb_target_group.nginx_tg"; then
             echo "Importing existing Target Group..."
-            terraform import aws_lb_target_group.nginx_tg <target_group_arn>
+            terraform import aws_lb_target_group.nginx_tg ${{ secrets.TARGET_GROUP_ARN }}
+          else
+            echo "Target Group already managed in Terraform state."
           fi
+
 
       # Plan Terraform changes
       - name: Terraform Plan
